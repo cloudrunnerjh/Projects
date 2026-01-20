@@ -1,0 +1,73 @@
+aws --version
+aws configure
+aws s3 ls s3://dev-raa-backup-archive
+
+aws s3 cp "C:\backups\test-backup.zip" s3://dev-raa-backup-archive/
+aws s3 cp "C:\backups\bigfile.zip" s3://your-bucket-name/ --storage-class DEEP_ARCHIVE --sse AES256
+
+Ensure AWS CLI v2 is Installed & Configured
+If not installed yet, see full CLI install steps above.
+
+Verify with:
+
+aws --version
+
+To upload directly to Deep Archive, run:
+
+aws s3 cp "C:\backups\bigfile.zip" s3://your-bucket-name/ --storage-class DEEP_ARCHIVE
+Or for an entire folder:
+
+aws s3 cp "C:\backups\" s3://your-bucket-name/ --recursive --storage-class DEEP_ARCHIVE
+This avoids paying for Standard tier and moves it immediately to Glacier Deep Archive
+3️For Very Large Files (over 5GB) – Use Multipart Upload Automatically
+aws s3 cp handles this automatically by breaking the file into parts behind the scenes.
+
+To tune performance (optional):
+
+aws configure set default.s3.multipart_threshold 64MB
+aws configure set default.s3.max_concurrent_requests 10
+aws configure set default.s3.multipart_chunksize 64MB
+Enable Server-Side Encryption (Optional but Recommended)
+Add:
+
+--sse AES256
+Example:
+
+aws s3 cp "C:\backups\bigfile.zip" s3://your-bucket-name/ --storage-class DEEP_ARCHIVE --sse AES256
+Optional: Automate Uploads
+
+Use PowerShell + Task Scheduler to automate daily uploads:
+
+Example PowerShell Script:
+$srcFolder = "C:\Backups"
+$bucket = "s3://your-bucket-name"
+
+Get-ChildItem -Path $srcFolder -File | ForEach-Object {
+    aws s3 cp $_.FullName "$bucket/" --storage-class DEEP_ARCHIVE --sse AES256
+}
+Advanced Option (Optional):
+
+If you need extremely large-scale transfer (multiple TBs, bandwidth constrained):
+
+Use AWS DataSync or AWS Snowball
+Option	When to Use	Notes
+AWS DataSync	On-prem to AWS over VPN/direct connect	Fast, encrypted, requires agent
+AWS Snowball Edge	10+ TB or low-bandwidth	AWS ships encrypted device to you
+Security Best Practices
+
+Use least privilege IAM policy (only s3:PutObject, s3:ListBucket).
+Enable Object Locking (if backups must be immutable).
+Consider KMS instead of AES256 for encryption if required.
+Disable public access on the bucket.
+Enable bucket logging and CloudTrail for audit tracking.
+
+Run Instructions
+Install dependencies (if not yet installed):
+pip install boto3
+Configure AWS CLI credentials:
+# aws configure
+Save as upload_backup.py and run:
+python upload_backup.py
+
+aws s3 ls s3://<your-archive-bucket>/backups/odc2fs01/sqlbackups/ARCHIVE_AWS/ --recursive --summarize
+aws s3 ls s3://<your-archive-bucket>/backups/odc2fs01/sqlbackups/ARCHIVE_AWS2/ --recursive --summarize

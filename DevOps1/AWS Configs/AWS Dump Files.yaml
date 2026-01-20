@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "RAA - S3 Archive Backup Bucket - Layer 6" #Upload daily → Immediately stored in Glacier Deep Archive → Purged after 1 year.
+
+Parameters:
+  Environment:
+    Type: "String"
+    Default: "dev"
+    Description: By selecting the prefix i.e. "dev", you will create new stack for RAA  product.
+    AllowedValues:
+      - "dev"
+      - "prod"
+      
+  ProductName:
+    Type: "String"
+    Default: "RANDA"
+    Description: This is reserved for Product Name. No need to change it.
+    AllowedValues:
+      - "RANDA"
+
+  BucketSuffix:
+    Type: String
+    Default: backup-archive
+    Description: Custom suffix for the S3 bucket name
+
+Resources:
+  RAABackupBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join ['', [!Ref Environment, "-raa-", !Ref BucketSuffix]]
+      VersioningConfiguration:
+        Status: Enabled
+
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+      LifecycleConfiguration:
+        Rules:
+          - Id: GlacierDeepArchiveRetention
+            Status: Enabled
+            Prefix: ""
+            Transitions:
+              - TransitionInDays: 0
+                StorageClass: DEEP_ARCHIVE
+            ExpirationInDays: 365
+            NoncurrentVersionTransitions:
+              - TransitionInDays: 0
+                StorageClass: DEEP_ARCHIVE
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 365
+
+      Tags:
+        - Key: Name
+          Value: !Join ['', [!Ref Environment, "-raa-", !Ref BucketSuffix]]
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Product
+          Value: !Ref ProductName
+        - Key: Description
+          Value: Daily backup archive with 1-year Glacier Deep Archive retention
+
+Outputs:
+  RAABackupBucketName:
+    Description: Name of the archive S3 bucket
+    Value: !Ref RAABackupBucket
+    Export:
+      Name: !Sub "${Environment}-BackupBucketName"
+
+  RAABackupBucketArn:
+    Description: ARN of the archive S3 bucket
+    Value: !GetAtt RAABackupBucket.Arn
+    Export:
+      Name: !Sub "${Environment}-BackupBucketArn"

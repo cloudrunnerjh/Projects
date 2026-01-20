@@ -1,0 +1,2 @@
+#
+C:\Windows\System32>netsh wlan show profile "JZQ01-2" key=clear

@@ -1,0 +1,46 @@
+#Step 1: Store Wallpaper & Lock Screen Files Centrally
+#Since SYSVOL doesn’t replicate between domains, you have two options:
+#Option A (Best Practice – Per Domain SYSVOL)
+#Copy raadesktop.png and RAAcolor.png into each domain’s SYSVOL. Example:
+    \\randa.local\SYSVOL\randa.local\scripts\wallpapers\
+    \\haggarclothing.com\SYSVOL\haggarclothing.com\scripts\wallpapers\
+    \\tribal-inc.com\SYSVOL\tribal-inc.com\scripts\wallpapers\
+    \\totescorp.com\SYSVOL\totescorp.com\scripts\wallpapers\
+    \\haggarcanada.com\SYSVOL\haggarcanada.com\scripts\wallpapers\
+    \randa.randacorp.com\SYSVOL\randa.randacorp.com\scripts\wallpapers\
+#Option B (Central File Server – Cross-Domain Access)
+#Place images on a central share, e.g.:
+    \\odc2fs01\randa-gpo\wallpapers\
+#Grant Read permissions to Domain Computers and Domain Users from all six domains.
+#Use this UNC path in every GPO.
+
+#Step 2: Create the GPO in Each Domain
+#For each domain, open GPMC (from a DC in that domain or via trust) → right-click the domain root → Create a GPO in this domain, and Link it here…
+#Name it consistently across all domains:
+    RAA - Desktop, Lock Screen, Security, Logon Message
+
+#Step 3: Configure GPO Settings
+#Repeat the configuration in each domain GPO:
+#Desktop Wallpaper:
+    User Config → Policies → Admin Templates → Desktop → Desktop Wallpaper
+    Path: \\<server>\randa-gpo\wallpapers\raadesktop.png
+#Lock Screen:
+    Computer Config → Policies → Admin Templates → Control Panel → Personalization → Force a specific default lock screen and logon image
+    Path: \\<server>\randa-gpo\wallpapers\RAAcolor.png
+#Prevent Screen Saver Change:
+    User Config → Policies → Admin Templates → Control Panel → Personalization → Prevent changing screen saver → Enabled
+#Idle Timeout (10 min)
+    Computer Config → Policies → Windows Settings → Security Settings → Local Policies → Security Options
+    Interactive logon: Machine inactivity limit → 600 seconds
+#Logon Banner:
+    Title: Randa Apparel & Accessories PC Usage Policy
+    Text: (full usage policy text you provided)
+
+#Step 4: Apply & Test Per Domain
+#After creating each GPO, force an update:
+    gpupdate /force
+#Test in each domain by logging into a workstation.
+
+#Step 5: Confirm
+#Once tested, you can confirm back to leadership:
+“The RAA - Desktop, Lock Screen, Security, Logon Message GPO has been created and linked across all six domains (randa.local, haggarclothing.com, tribal-inc.com, totescorp.com, haggarcanada.com, randa.randacorp.com). The wallpaper, lock screen, inactivity limit, and logon message are enforced. Please advise if additional adjustments are needed.”

@@ -1,0 +1,4 @@
+"C:\Program Files\VMware\VMware OVF Tool\ovftool.exe" "C:\path\to\datasync.ova" "C:\path\to\output\datasync.ovf"
+W!nBntS5A*5'FBZh~4d=
+Randa2025!
+Gr33n3ggs&h@m!
