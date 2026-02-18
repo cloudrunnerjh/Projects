@@ -132,7 +132,7 @@ show run int gi1/0/44
 no switchport access vlan <vlan_id>
 show interface gi1/0/1 switchport
 show interfaces trunk
-show interface gi1/0/1 counters errors
+show interface gi1/0/1 counters errors 
 show interface gi1/0/1 | include rate
 
 
@@ -146,7 +146,7 @@ show mac address-table | include <mac>
 
 
 # ===============================
-# DEVICE INFORMATION
+# DEVICE INFORMAT
 # ===============================
 
 show version
@@ -208,7 +208,7 @@ show ip route
 show arp
 ping <ip>
 traceroute <ip>y
-show ip interface brief
+show ip interface brief ***************************************************************************
 show running-config | include interface Vlan|ip address
 
 
@@ -295,3 +295,12 @@ router bgp 64513
    neighbor 169.254.96.49 password 0xliPBrp11cTsZWQdv2TUnUq
    network " " ! --> Prefixes you want to advertise over this Virtual Interface
 exit
+
+##############################################
+# show snmp
+###############################################
+show snmp community
+show snmp group
+
+##################################################
+show transceiver
